@@ -143,40 +143,6 @@ src/main/resources/
 
 ---
 
-## 🚀 Publicar na nuvem (Render.com)
-
-O projeto está pronto para o Render (gratuito):
-
-- `Dockerfile` — compila e gera a imagem (Java 21 + Maven na nuvem)
-- `render.yaml` — blueprint com as configurações do serviço
-
-### Passo a passo
-
-1. **Suba o projeto no GitHub**
-   - Crie uma conta/repositório em https://github.com
-   - Envie a pasta do projeto para o repositório (git push, ou upload dos
-     arquivos pelo próprio GitHub: "Add file → Upload files")
-   - ⚠️ NÃO suba as pastas `target/` e `data/` (já excluídas pelo `.gitignore`)
-2. **No Render** (https://dashboard.render.com) — crie a conta (pode usar o
-   login do GitHub)
-3. **New + → Blueprint** → selecione o repositório → o Render lê o
-   `render.yaml` automaticamente
-4. Ele vai pedir as variáveis `APP_ADMIN_SENHA`, `APP_USER1_SENHA`,
-   `APP_USER2_SENHA` — defina as senhas que quiser para os 3 perfis
-5. **Apply / Create** — o Render compila na nuvem (leva alguns minutos) e
-   gera um link tipo `https://banco-de-conhecimento.onrender.com`
-
-### ⚠️ Limites do plano gratuito do Render
-
-- O servidor **dorme após 15 minutos sem acesso** — o primeiro acesso depois
-  disso demora ~1 minuto para acordar
-- O **armazenamento é temporário**: os registros, fotos e vídeos enviados são
-  **apagados a cada reinício/deploys** (a pasta de dados não persiste no plano
-  free). Para persistência real: disco persistente (pago) ou banco gerenciado
-- Se o repositório ficar **público**, qualquer pessoa vê o código — mantenha
-  **privado** e/ou use as variáveis de senha do Render
-
-### Rodar localmente como Docker (opcional)
 ```bash
 docker build -t banco-conhecimento .
 docker run -p 8180:8080 -e APP_ADMIN_SENHA=minhasenha banco-conhecimento
