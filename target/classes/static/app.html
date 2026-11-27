@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciar - Banco de Conhecimento</title>
+<style>
+  :root {
+    --navy:#0f2740; --navy2:#163453; --azul:#2563eb; --verde:#16a34a;
+    --fundo:#eef2f7; --card:#ffffff; --texto:#1e293b; --sub:#64748b;
+    --borda:#dfe6ef; --danger:#dc2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box;
+      font-family:'Segoe UI', Tahoma, Arial, sans-serif; }
+  body { background:var(--fundo); min-height:100vh; color:var(--texto); }
+
+  /* ---------- barra superior ---------- */
+  header {
+    background:var(--navy); color:#fff; padding:0 26px; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 2px 8px rgba(9,20,35,.35); position:sticky; top:0; z-index:20;
+  }
+  .marca { display:flex; align-items:center; gap:12px; }
+  .marca .logo {
+    width:36px; height:36px; border-radius:9px; background:var(--verde);
+    display:flex; align-items:center; justify-content:center; font-size:19px;
+  }
+  .marca h1 { font-size:17px; font-weight:700; letter-spacing:.2px; }
+  .marca .sub { font-size:11.5px; color:#9db4cd; margin-top:1px; }
+  .top-acoes { display:flex; align-items:center; gap:8px; }
+  .chip-perfil {
+    background:var(--navy2); border:1px solid #2c4a6e; border-radius:20px;
+    padding:6px 14px; font-size:12.5px; color:#dbe7f5;
+  }
+  .top-acoes a {
+    color:#c7d7ea; font-size:12.5px; text-decoration:none; cursor:pointer;
+    padding:7px 12px; border-radius:8px; transition:background .15s;
+  }
+  .top-acoes a:hover { background:var(--navy2); color:#fff; }
+
+  /* ---------- conteúdo ---------- */
+  .wrap { max-width:1180px; margin:0 auto; padding:22px 26px 70px; }
+
+  /* KPIs */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:14px; margin-bottom:20px; }
+  .kpi {
+    background:var(--card); border-radius:12px; padding:16px 18px;
+    border:1px solid var(--borda); display:flex; align-items:center; gap:14px;
+  }
+  .kpi .icone {
+    width:44px; height:44px; border-radius:10px; display:flex; align-items:center;
+    justify-content:center; font-size:21px; flex-shrink:0;
+  }
+  .kpi .icone.i1 { background:#e0e9ff; }
+  .kpi .icone.i2 { background:#dcfce7; }
+  .kpi .icone.i3 { background:#fef3c7; }
+  .kpi .icone.i4 { background:#ede9fe; }
+  .kpi .valor { font-size:22px; font-weight:700; line-height:1.1; }
+  .kpi .rotulo { font-size:12px; color:var(--sub); }
+
+  /* painel + toolbar */
+  .painel {
+    background:var(--card); border:1px solid var(--borda); border-radius:12px;
+    overflow:hidden;
+  }
+  .toolbar {
+    padding:16px 20px; display:flex; gap:12px; align-items:center;
+    border-bottom:1px solid var(--borda); flex-wrap:wrap;
+    background:#fbfdff;
+  }
+  .toolbar h2 { font-size:15.5px; color:var(--navy); margin-right:auto;
+    display:flex; align-items:center; gap:8px; }
+  .toolbar h2::before { content:''; width:4px; height:18px; border-radius:3px;
+    background:var(--azul); display:inline-block; }
+  .toolbar input {
+    padding:9px 13px; border:1.5px solid var(--borda); border-radius:9px;
+    font-size:13.5px; width:300px; outline:none; transition:border-color .15s;
+  }
+  .toolbar input:focus { border-color:var(--azul); }
+  .toolbar select {
+    padding:9px 12px; border:1.5px solid var(--borda); border-radius:9px;
+    font-size:13.5px; background:#fff; outline:none; cursor:pointer;
+  }
+  .btn-novo {
+    background:var(--verde); color:#fff; border:none; border-radius:9px;
+    padding:10px 18px; font-size:13.5px; font-weight:700; cursor:pointer;
+    white-space:nowrap; flex-shrink:0; transition:filter .15s;
+    display:flex; align-items:center; gap:7px;
+  }
+  .btn-novo:hover { filter:brightness(1.1); }
+
+  /* tabela */
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th {
+    text-align:left; padding:11px 16px; background:#f6f9fc; color:var(--sub);
+    font-size:11.5px; text-transform:uppercase; letter-spacing:.5px;
+    border-bottom:1px solid var(--borda); white-space:nowrap;
+  }
+  tbody td { padding:12px 16px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  tbody tr { cursor:pointer; transition:background .12s; }
+  tbody tr:hover { background:#f4f8fd; }
+  .cel-problema { display:flex; align-items:center; gap:12px; min-width:230px; }
+  .cel-problema .mini {
+    width:42px; height:42px; border-radius:8px; background:#0f2740; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; color:#94a3b8;
+    font-size:18px; overflow:hidden;
+  }
+  .cel-problema .mini img { width:100%; height:100%; object-fit:cover; }
+  .cel-problema strong { font-size:14px; color:var(--texto); display:block; }
+  .cel-problema .linha2 { color:var(--sub); font-size:12px; margin-top:2px; }
+  .badge {
+    display:inline-block; background:#e8eef6; color:#34506e; font-size:11.5px;
+    padding:4px 11px; border-radius:20px; font-weight:600; white-space:nowrap;
+  }
+  .anexos-cel { white-space:nowrap; color:var(--sub); font-size:12.5px; }
+  .anexos-cel span { margin-right:7px; }
+  .btn-abrir {
+    background:#eef4ff; color:var(--azul); border:1px solid #d3e2fd;
+    border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700;
+    cursor:pointer; white-space:nowrap;
+  }
+  .btn-abrir:hover { background:var(--azul); color:#fff; }
+  .vazio {
+    text-align:center; color:var(--sub); padding:56px 20px; font-size:14.5px;
+    line-height:1.7; background:#fbfdff;
+  }
+
+  /* ---------- modais ---------- */
+  .fundo-modal {
+    display:none; position:fixed; inset:0; background:rgba(9,20,35,.55);
+    z-index:50; align-items:center; justify-content:center; padding:20px;
+  }
+  .fundo-modal.aberto { display:flex; }
+  .modal {
+    background:#fff; border-radius:14px; width:780px; max-width:100%;
+    max-height:92vh; overflow-y:auto; box-shadow:0 30px 70px rgba(9,20,35,.4);
+  }
+  .modal-topo {
+    padding:18px 26px; border-bottom:1px solid var(--borda);
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; background:#fff; z-index:2;
+  }
+  .modal-topo h2 { font-size:18px; color:var(--navy); }
+  .fechar-x { background:none; border:none; font-size:20px; color:var(--sub);
+    cursor:pointer; }
+  .modal-corpo { padding:22px 26px; }
+  .modal .sub { color:var(--sub); font-size:12.5px; margin-bottom:14px; }
+  .modal .descricao {
+    color:#475569; font-size:14.5px; line-height:1.6; background:#f6f9fc;
+    padding:16px; border-radius:10px; margin-bottom:16px; white-space:pre-wrap;
+    border-left:4px solid var(--azul);
+  }
+  video { width:100%; border-radius:10px; background:#000; margin-bottom:14px; }
+  .anexos { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:12px; margin-bottom:16px; }
+  .anexos img { width:100%; height:110px; object-fit:cover; border-radius:9px;
+    cursor:pointer; border:1px solid var(--borda); }
+  .anexo-arquivo {
+    background:#f6f9fc; border:1px solid var(--borda); border-radius:9px;
+    padding:12px; font-size:12.5px; color:#475569; display:flex;
+    flex-direction:column; gap:5px;
+  }
+  .anexo-arquivo a { color:var(--azul); font-weight:600; text-decoration:none;
+    word-break:break-all; }
+  .acao-anexo { color:var(--danger); cursor:pointer; font-size:11.5px;
+    align-self:flex-start; background:none; border:none; text-decoration:underline;
+    padding:0; }
+  .box-upload { margin:16px 0 4px; padding:14px; border:1.5px dashed #cbd5e1;
+    border-radius:10px; background:#fbfdff; }
+  .box-upload label { font-size:12.5px; color:var(--sub); display:block; margin-bottom:8px; }
+
+  /* formulário */
+  .form-item label { display:block; font-size:12.5px; font-weight:700;
+    color:#334155; margin:14px 0 5px; }
+  .form-item input, .form-item textarea, .form-item select {
+    width:100%; padding:11px 13px; border:1.5px solid #cbd5e1; border-radius:9px;
+    font-size:14px; outline:none; transition:border-color .15s; background:#fff;
+  }
+  .form-item input:focus, .form-item textarea:focus, .form-item select:focus {
+    border-color:var(--azul); }
+  .form-item textarea { min-height:100px; resize:vertical; }
+  .lista-arquivos { margin-top:8px; font-size:12.5px; color:var(--sub); }
+  .lista-arquivos div { padding:3px 0; }
+  .modal .acoes { display:flex; gap:10px; justify-content:flex-end;
+    margin-top:18px; padding-top:16px; border-top:1px solid var(--borda); }
+  .modal .acoes button {
+    padding:10px 20px; border-radius:9px; border:1.5px solid #cbd5e1;
+    background:#fff; cursor:pointer; font-size:13.5px; font-weight:600;
+    color:#334155; display:flex; align-items:center; gap:6px;
+  }
+  .modal .acoes .perigo { color:var(--danger); border-color:#fecaca; background:#fef2f2; }
+  .modal .acoes .primario {
+    background:var(--verde); color:#fff; border:none;
+  }
+  .modal .acoes .primario:hover { filter:brightness(1.08); }
+  .feedback { margin-top:10px; font-size:13px; }
+  .feedback.ok { color:var(--verde); }
+  .feedback.erro { color:var(--danger); }
+
+  /* tabela de usuários */
+  .tabela-usuarios { width:100%; border-collapse:collapse; margin-top:16px;
+    font-size:13.5px; }
+  .tabela-usuarios th { text-align:left; color:var(--sub); padding:9px 10px;
+    border-bottom:2px solid var(--borda); font-size:11.5px; text-transform:uppercase; }
+  .tabela-usuarios td { padding:10px; border-bottom:1px solid #f1f5f9; }
+  .tabela-usuarios .btn-excluir { color:var(--danger); background:#fef2f2;
+    border:1px solid #fecaca; border-radius:7px; padding:4px 12px; cursor:pointer;
+    font-size:12px; }
+  .tabela-usuarios .btn-editar { color:var(--azul); background:#eef4ff;
+    border:1px solid #d3e2fd; border-radius:7px; padding:4px 12px;
+    cursor:pointer; font-size:12px; font-weight:600; margin-right:6px; }
+  .tabela-usuarios .btn-editar:hover { background:var(--azul); color:#fff; }
+  .btn-cancelar { background:#fff; border:1.5px solid #cbd5e1;
+    border-radius:9px; padding:10px 18px; font-size:13.5px; font-weight:600;
+    color:#334155; cursor:pointer; }
+  #usrLogin:disabled { background:#f1f5f9; color:#94a3b8; }
+
+  .toast {
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; padding:13px 24px; border-radius:10px;
+    font-size:13.5px; opacity:0; transition:opacity .3s; z-index:99;
+    pointer-events:none; box-shadow:0 10px 30px rgba(9,20,35,.35);
+  }
+  .toast.visivel { opacity:1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <div class="logo">&#128218;</div>
+    <div>
+      <h1>Banco de Conhecimento</h1>
+      <div class="sub">Gest&atilde;o de problemas resolvidos</div>
+    </div>
+  </div>
+  <div class="top-acoes">
+    <span id="nomeUsuario" class="chip-perfil"></span>
+    <a id="linkDashboard" onclick="abrirDashboard()" style="display:none">&#128202; Dashboard</a>
+    <a id="linkUsuarios" onclick="abrirUsuarios()" style="display:none">Usu&aacute;rios</a>
+    <a id="linkApi" href="/swagger-ui.html" target="_blank" title="Documenta&ccedil;&atilde;o da API">API</a>
+    <a onclick="sair()">Sair</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- indicadores -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="icone i1">&#128218;</div>
+      <div><div class="valor" id="kpiTotal">0</div>
+        <div class="rotulo">Problemas registrados</div></div>
+    </div>
+    <div class="kpi">
+      <div class="icone i2">&#128193;</div>
+      <div><div class="valor" id="kpiCategorias">0</div>
+        <div class="rotulo">Categorias</div></div>
+    </div>
+    <div class="kpi">
+      <div class="icone i3">&#127909;</div>
+      <div><div class="valor" id="kpiAnexos">0</div>
+        <div class="rotulo">Fotos e v&iacute;deos anexados</div></div>
+    </div>
+    <div class="kpi">
+      <div class="icone i4">&#128100;</div>
+      <div><div class="valor" id="kpiPerfil">-</div>
+        <div class="rotulo">Seu perfil de acesso</div></div>
+    </div>
+  </div>
+
+  <!-- painel -->
+  <div class="painel">
+    <div class="toolbar">
+      <h2>Problemas resolvidos</h2>
+      <input id="busca" placeholder="Buscar por t&iacute;tulo ou descri&ccedil;&atilde;o...">
+      <select id="filtroCategoria"><option value="todas">Todas as categorias</option></select>
+      <button class="btn-novo" id="botaoNovo" onclick="abrirFormNovo()">
+        &#10133; Novo problema resolvido
+      </button>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Problema / Solu&ccedil;&atilde;o</th>
+            <th>Categoria</th>
+            <th>Anexos</th>
+            <th>Autor</th>
+            <th>Data</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="linhas"></tbody>
+      </table>
+      <div class="vazio" id="vazio" style="display:none">
+        <div style="font-size:38px; margin-bottom:10px;">&#128218;</div>
+        Nenhum problema cadastrado ainda.<br>
+        Clique em <b>&quot;+ Novo problema resolvido&quot;</b> para guardar a
+        solu&ccedil;&atilde;o com fotos e v&iacute;deos &mdash; as pessoas sem
+        informa&ccedil;&otilde;es t&eacute;cnicas e informa&ccedil;&otilde;es de
+        processos novos v&atilde;o encontrar a solu&ccedil;&atilde;o aqui.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal: novo/editar -->
+<div class="fundo-modal" id="modalForm">
+  <div class="modal">
+    <div class="modal-topo">
+      <h2 id="tituloForm">Novo problema resolvido</h2>
+      <button class="fechar-x" onclick="fecharModais()">&#10005;</button>
+    </div>
+    <form id="formItem" class="form-item modal-corpo">
+      <input type="hidden" id="campoId">
+      <label>T&iacute;tulo *</label>
+      <input id="campoTitulo" required maxlength="150"
+             placeholder="Resuma o problema em uma linha">
+      <label>Categoria</label>
+      <input id="campoCategoria" list="categorias" maxlength="80"
+             placeholder="ex: TI, Manuten&ccedil;&atilde;o, RH...">
+      <datalist id="categorias"></datalist>
+      <label>Descri&ccedil;&atilde;o / Como resolver</label>
+      <textarea id="campoDescricao" maxlength="5000"
+                placeholder="Descreva o problema e o passo a passo da solu&ccedil;&atilde;o..."></textarea>
+      <div id="boxRestrito" style="display:none; margin-top:12px;
+        padding:10px 12px; background:#fef3c7; border:1px solid #fde68a;
+        border-radius:9px;">
+        <label style="display:flex; align-items:center; gap:8px;
+          font-weight:600; color:#92400e; margin:0;">
+          <input type="checkbox" id="campoSomenteAdmin"
+                 style="width:auto;">
+          Vis&iacute;vel somente para ADMIN (dire&ccedil;&atilde;o)
+        </label>
+      </div>
+      <div class="box-upload" id="zonaUpload">
+        <label>Anexos &mdash; foto at&eacute; 5 MB &bull; v&iacute;deo at&eacute; 50 MB &bull; arquivo at&eacute; 10 MB</label>
+        <input type="file" id="campoArquivos" multiple
+               accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+        <div class="lista-arquivos" id="listaArquivos"></div>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div class="acoes">
+        <button type="button" onclick="fecharModais()">Cancelar</button>
+        <button type="submit" class="primario">&#128190; Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- modal: detalhes -->
+<div class="fundo-modal" id="modalDetalhe">
+  <div class="modal">
+    <div class="modal-topo">
+      <h2 id="detTitulo"></h2>
+      <button class="fechar-x" onclick="fecharModais()">&#10005;</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="sub" id="detSub"></div>
+      <div class="descricao" id="detDescricao"></div>
+      <div id="detVideo"></div>
+      <div class="anexos" id="detAnexos"></div>
+      <div class="acoes" id="boxAnexar" style="justify-content:flex-start;
+        border:none; margin-top:0; padding-top:0;">
+        <input type="file" id="campoAnexoDireto" multiple
+               accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+               style="display:none">
+        <button class="btn-novo"
+                onclick="document.getElementById('campoAnexoDireto').click()">
+          &#10133; Adicionar fotos / v&iacute;deos / arquivos
+        </button>
+      </div>
+      <div class="acoes">
+        <button class="perigo" id="btnDetExcluir"
+                onclick="excluirItem()">&#128465; Excluir registro</button>
+        <button id="btnDetEditar" onclick="editarAtual()">&#9998; Editar</button>
+        <button class="primario" onclick="fecharModais()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal: usuarios (so ADMIN) -->
+<div class="fundo-modal" id="modalUsuarios">
+  <div class="modal">
+    <div class="modal-topo">
+      <h2>Usu&aacute;rios do sistema</h2>
+      <button class="fechar-x" onclick="fecharModais()">&#10005;</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="sub">ADMIN (dire&ccedil;&atilde;o &mdash; tudo) &bull; USER1
+        (administrativo &mdash; inclui/altera/visualiza) &bull; USER2
+        (operacional &mdash; s&oacute; visualiza)</div>
+      <div class="form-item">
+        <label>Login *</label>
+        <input id="usrLogin" maxlength="60">
+        <label>Senha * (m&iacute;nimo 4 caracteres)</label>
+        <input id="usrSenha" type="password" maxlength="60">
+        <label>Nome *</label>
+        <input id="usrNome" maxlength="100">
+        <label>Perfil *</label>
+        <select id="usrPerfil">
+          <option value="ADMIN">ADMIN &mdash; Dire&ccedil;&atilde;o (tudo)</option>
+          <option value="USER1">USER1 &mdash; Administrativo (inclui/altera/visualiza)</option>
+          <option value="USER2">USER2 &mdash; Operacional (s&oacute; visualiza)</option>
+        </select>
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="usrDeveTrocarSenha" style="width:auto">
+          Usu&aacute;rio deve trocar a senha no pr&oacute;ximo login
+        </label>
+        <div class="acoes" style="border:none; padding-top:14px; justify-content:flex-start;">
+          <button class="primario" id="botaoCriarUsuario"
+                  onclick="salvarUsuario()">&#10133; Criar usu&aacute;rio</button>
+          <button id="cancelarEdicao" class="btn-cancelar"
+                  onclick="resetFormUsuario()" style="display:none">
+            Cancelar edi&ccedil;&atilde;o
+          </button>
+        </div>
+      </div>
+      <table class="tabela-usuarios">
+        <thead><tr><th>Login</th><th>Nome</th><th>Perfil</th><th>Senha</th><th></th></tr></thead>
+        <tbody id="corpoUsuarios"></tbody>
+      </table>
+      <div class="acoes">
+        <button class="primario" onclick="fecharModais()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal: dashboard (so ADMIN) -->
+<div class="fundo-modal" id="modalDashboard">
+  <div class="modal">
+    <div class="modal-topo">
+      <h2>&#128202; Dashboard &mdash; problemas registrados</h2>
+      <button class="fechar-x" onclick="fecharModais()">&#10005;</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="filtros-dash">
+        <button class="filtro-dash ativo" id="fdDia"
+                onclick="trocarGranularidade('DIA')">Por dia (30 dias)</button>
+        <button class="filtro-dash" id="fdMes"
+                onclick="trocarGranularidade('MES')">Por m&ecirc;s (12 meses)</button>
+        <button class="filtro-dash" id="fdAno"
+                onclick="trocarGranularidade('ANO')">Por ano</button>
+        <span class="total-dash" id="totalDash"></span>
+      </div>
+      <div class="grafico" id="grafico"></div>
+      <div class="rotulos" id="rotulos"></div>
+      <div class="grafico-vazio" id="graficoVazio" style="display:none">
+        Nenhum registro neste per&iacute;odo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .filtros-dash { display:flex; gap:8px; align-items:center;
+    margin-bottom:22px; flex-wrap:wrap; }
+  .filtro-dash {
+    background:#f1f5f9; border:1.5px solid var(--borda); border-radius:20px;
+    padding:8px 16px; font-size:13px; font-weight:600; color:#475569;
+    cursor:pointer; transition:all .15s;
+  }
+  .filtro-dash:hover { border-color:var(--azul); color:var(--azul); }
+  .filtro-dash.ativo { background:var(--azul); border-color:var(--azul);
+    color:#fff; }
+  .total-dash { margin-left:auto; font-size:13px; color:var(--sub); }
+  .total-dash b { color:var(--navy); font-size:16px; }
+  .grafico {
+    display:flex; align-items:flex-end; gap:6px; height:210px;
+    padding:30px 12px 0; border-bottom:2px solid var(--borda);
+    overflow-x:auto;
+  }
+  .coluna { flex:1; min-width:26px; display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-end; height:100%; }
+  .coluna .barra {
+    width:100%; max-width:46px; background:linear-gradient(180deg,#60a5fa,#2563eb);
+    border-radius:6px 6px 0 0; transition:height .3s; position:relative;
+  }
+  .coluna .qtd {
+    position:absolute; top:-20px; width:100%; text-align:center;
+    font-size:11.5px; font-weight:700; color:var(--navy);
+  }
+  .rotulos { display:flex; gap:6px; padding:6px 12px 0; }
+  .rotulos div { flex:1; min-width:26px; text-align:center; font-size:10.5px;
+    color:var(--sub); white-space:nowrap; overflow:hidden; }
+  .grafico-vazio { text-align:center; color:var(--sub); padding:30px 0; font-size:14px; }
+</style>
+
+<!-- modal obrigatorio: troca de senha temporaria -->
+<div class="fundo-modal" id="modalTrocarSenha">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-topo">
+      <h2>&#128274; Trocar senha tempor&aacute;ria</h2>
+    </div>
+    <div class="modal-corpo">
+      <div class="descricao">O administrador definiu uma senha tempor&aacute;ria.
+        Digite-a abaixo e escolha a nova senha que voc&ecirc; usar&aacute;
+        para entrar no sistema.</div>
+      <div class="form-item">
+        <label for="senhaAtual">Senha tempor&aacute;ria *</label>
+        <input id="senhaAtual" type="password" autocomplete="current-password">
+        <label for="senhaNova">Nova senha * (m&iacute;nimo 4 caracteres)</label>
+        <input id="senhaNova" type="password" autocomplete="new-password">
+        <label for="senhaConfirmar">Confirmar nova senha *</label>
+        <input id="senhaConfirmar" type="password" autocomplete="new-password">
+        <div id="feedbackTroca" class="feedback"></div>
+        <div class="acoes">
+          <button onclick="sair()">Sair</button>
+          <button class="primario" onclick="salvarTrocaSenha()">Salvar nova senha</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ITENS = [];
+let itemAtual = null;
+let perfilAtual = '';
+let trocaSenhaPendente = false;
+
+function rotuloPerfil(p) {
+  return p === 'ADMIN' ? 'Dire\u00e7\u00e3o (administrador)'
+       : p === 'USER1' ? 'Administrativo'
+       : p === 'USER2' ? 'Operacional' : p;
+}
+function podeCriar()  { return perfilAtual === 'ADMIN' || perfilAtual === 'USER1'; }
+function podeEditar() { return perfilAtual === 'ADMIN' || perfilAtual === 'USER1'; }
+function podeExcluir(){ return perfilAtual === 'ADMIN'; }
+
+async function api(url, opcoes = {}) {
+  const resp = await fetch(url, { credentials:'same-origin', ...opcoes });
+  if (resp.status === 401) { window.location.href = '/login.html'; }
+  return resp;
+}
+
+function toast(texto) {
+  const t = document.getElementById('toast');
+  t.textContent = texto;
+  t.classList.add('visivel');
+  setTimeout(() => t.classList.remove('visivel'), 2600);
+}
+
+function iconeDoAnexo(tipo) {
+  return tipo === 'VIDEO' ? '\uD83C\uDFAC' : tipo === 'FOTO' ? '\uD83D\uDDBC' : '\uD83D\uDCC4';
+}
+
+async function carregar() {
+  const resp = await api('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/login.html'; return; }
+  const usuario = await resp.json();
+  perfilAtual = usuario.perfil || '';
+  document.getElementById('nomeUsuario').textContent =
+    usuario.nome + ' \u2014 ' + rotuloPerfil(perfilAtual);
+  document.getElementById('kpiPerfil').textContent = rotuloPerfil(perfilAtual);
+  if (usuario.deveTrocarSenha) {
+    trocaSenhaPendente = true;
+    document.getElementById('senhaAtual').value = '';
+    document.getElementById('senhaNova').value = '';
+    document.getElementById('senhaConfirmar').value = '';
+    document.getElementById('feedbackTroca').className = 'feedback';
+    document.getElementById('feedbackTroca').textContent = '';
+    document.getElementById('modalTrocarSenha').classList.add('aberto');
+    document.getElementById('senhaAtual').focus();
+    return;
+  }
+  document.getElementById('botaoNovo').style.display = podeCriar() ? 'flex' : 'none';
+  document.getElementById('linkUsuarios').style.display =
+    podeExcluir() ? '' : 'none';
+  document.getElementById('linkDashboard').style.display =
+    podeExcluir() ? '' : 'none';
+  document.getElementById('linkApi').style.display =
+    podeExcluir() ? '' : 'none';
+
+  const busca = document.getElementById('busca').value.trim();
+  const categoria = document.getElementById('filtroCategoria').value;
+  const resposta = await api('/api/itens?query=' + encodeURIComponent(busca)
+    + '&categoria=' + encodeURIComponent(categoria));
+  if (!resposta.ok) return;
+  ITENS = await resposta.json();
+  desenhar();
+}
+
+function desenhar() {
+  const corpo = document.getElementById('linhas');
+  corpo.innerHTML = '';
+  let totalAnexos = 0;
+  for (const item of ITENS) totalAnexos += (item.anexos || []).length;
+  document.getElementById('kpiTotal').textContent = ITENS.length;
+  document.getElementById('kpiAnexos').textContent = totalAnexos;
+  document.getElementById('vazio').style.display = ITENS.length ? 'none' : 'block';
+
+  for (const item of ITENS) {
+    const foto = (item.anexos || []).find(a => a.tipo === 'FOTO');
+    const videos = (item.anexos || []).filter(a => a.tipo === 'VIDEO').length;
+    const total = (item.anexos || []).length;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="cel-problema">
+        <div class="mini">${foto
+          ? `<img src="/api/anexos/${foto.id}/stream" alt="">`
+          : '\uD83D\uDCCA'}</div>
+        <div><strong>${item.titulo}
+          ${item.somenteAdmin ? '\uD83D\uDD12' : ''}</strong>
+          <div class="linha2">${item.descricao || '(sem descri\u00e7\u00e3o)'}</div>
+        </div></div></td>
+      <td>${item.categoria ? `<span class="badge">${item.categoria}</span>` : '\u2014'}</td>
+      <td class="anexos-cel">
+        ${videos ? `<span>\uD83C\uDFAC ${videos}</span>` : ''}
+        <span>${total} arquivo(s)</span></td>
+      <td>${item.autor}</td>
+      <td style="white-space:nowrap">${item.criadoEm}</td>
+      <td><button class="btn-abrir" onclick="event.stopPropagation(); abrirDetalhePorId(${item.id})">Abrir</button></td>`;
+    tr.onclick = () => abrirDetalhe(item);
+    corpo.appendChild(tr);
+  }
+}
+
+function abrirDetalhePorId(id) {
+  const item = ITENS.find(i => i.id === id);
+  if (item) abrirDetalhe(item);
+}
+
+function abrirDetalhe(item) {
+  itemAtual = item;
+  document.getElementById('detTitulo').textContent = item.titulo;
+  document.getElementById('detSub').textContent =
+    (item.categoria ? item.categoria + ' \u2022 ' : '') + item.criadoEm
+    + ' \u2022 ' + item.autor
+    + (item.somenteAdmin ? ' \u2022 \uD83D\uDD12 Restrito ao ADMIN' : '');
+  document.getElementById('detDescricao').textContent =
+    item.descricao || '(sem descri\u00e7\u00e3o)';
+
+  const divVideo = document.getElementById('detVideo');
+  const video = (item.anexos || []).find(a => a.tipo === 'VIDEO');
+  divVideo.innerHTML = video
+    ? `<video controls preload="metadata" src="/api/anexos/${video.id}/stream"></video>`
+    : '';
+
+  const anexosDiv = document.getElementById('detAnexos');
+  anexosDiv.innerHTML = '';
+  for (const a of item.anexos || []) {
+    const div = document.createElement('div');
+    if (a.tipo === 'FOTO') {
+      div.innerHTML = `<img src="/api/anexos/${a.id}/stream" alt="">
+        ${podeCriar() ? `<button class="acao-anexo" onclick="event.stopPropagation(); removerAnexo(${a.id})">remover</button>` : ''}`;
+      div.querySelector('img').onclick = () =>
+        window.open('/api/anexos/' + a.id + '/stream', '_blank');
+    } else {
+      div.className = 'anexo-arquivo';
+      div.innerHTML = `${iconeDoAnexo(a.tipo)} <a href="/api/anexos/${a.id}/stream" target="_blank">${a.nome}</a>
+        (${(a.tamanhoBytes/1048576).toFixed(1)} MB)
+        ${podeCriar() ? `<button class="acao-anexo" onclick="removerAnexo(${a.id})">remover</button>` : ''}`;
+    }
+    anexosDiv.appendChild(div);
+  }
+  document.getElementById('btnDetExcluir').style.display =
+    podeExcluir() ? '' : 'none';
+  document.getElementById('btnDetEditar').style.display =
+    podeEditar() ? '' : 'none';
+  document.getElementById('boxAnexar').style.display =
+    podeCriar() ? 'flex' : 'none';
+  document.getElementById('modalDetalhe').classList.add('aberto');
+}
+
+async function excluirItem() {
+  if (!podeExcluir()) { toast('Seu perfil n\u00e3o permite excluir.'); return; }
+  if (!itemAtual || !confirm('Excluir "' + itemAtual.titulo + '" e seus anexos?')) return;
+  const resp = await api('/api/itens/' + itemAtual.id, { method:'DELETE' });
+  if (resp.ok) { fecharModais(); toast('Registro excl\u00eddo.'); carregar(); carregarCategorias(); }
+}
+
+async function removerAnexo(id) {
+  if (!confirm('Remover este anexo?')) return;
+  const resp = await api('/api/anexos/' + id, { method:'DELETE' });
+  if (resp.ok) {
+    const lista = await (await api('/api/itens?query=')).json();
+    const atualizado = lista.find(i => i.id === itemAtual.id);
+    if (atualizado) { itemAtual = atualizado; fecharModais(); abrirDetalhe(atualizado); }
+    carregar();
+    toast('Anexo removido.');
+  }
+}
+
+// --------------------------------------------------------- formulario
+
+function abrirFormNovo() {
+  document.getElementById('tituloForm').textContent = 'Novo problema resolvido';
+  document.getElementById('formItem').reset();
+  document.getElementById('campoId').value = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('zonaUpload').style.display = 'block';
+  document.getElementById('listaArquivos').innerHTML = '';
+  document.getElementById('boxRestrito').style.display =
+    podeExcluir() ? 'block' : 'none';
+  document.getElementById('campoSomenteAdmin').checked = false;
+  document.getElementById('modalForm').classList.add('aberto');
+}
+
+function editarAtual() {
+  if (!itemAtual) return;
+  document.getElementById('modalDetalhe').classList.remove('aberto');
+  abrirFormNovo();
+  document.getElementById('tituloForm').textContent = 'Editar registro';
+  document.getElementById('campoId').value = itemAtual.id;
+  document.getElementById('campoTitulo').value = itemAtual.titulo;
+  document.getElementById('campoCategoria').value = itemAtual.categoria || '';
+  document.getElementById('campoDescricao').value = itemAtual.descricao || '';
+  document.getElementById('boxRestrito').style.display =
+    podeExcluir() ? 'block' : 'none';
+  document.getElementById('campoSomenteAdmin').checked =
+    Boolean(itemAtual.somenteAdmin);
+}
+
+document.getElementById('campoArquivos').addEventListener('change', (e) => {
+  const lista = document.getElementById('listaArquivos');
+  lista.innerHTML = [...e.target.files]
+    .map(f => `<div>${f.name} \u2014 ${(f.size/1048576).toFixed(1)} MB</div>`).join('');
+});
+
+document.getElementById('formItem').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const feedback = document.getElementById('feedback');
+  feedback.textContent = '';
+  feedback.className = 'feedback';
+
+  const id = document.getElementById('campoId').value;
+  const corpo = {
+    titulo: document.getElementById('campoTitulo').value.trim(),
+    categoria: document.getElementById('campoCategoria').value.trim(),
+    descricao: document.getElementById('campoDescricao').value.trim(),
+    somenteAdmin: podeExcluir()
+      && document.getElementById('campoSomenteAdmin').checked
+  };
+
+  let item = null;
+  if (id) {
+    const resp = await api('/api/itens/' + id, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(corpo) });
+    if (!resp.ok) { mostrarErro(feedback, resp, 'N\u00e3o foi poss\u00edvel salvar.'); return; }
+    item = await resp.json();
+  } else {
+    const resp = await api('/api/itens', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(corpo) });
+    if (!resp.ok) { mostrarErro(feedback, resp, 'N\u00e3o foi poss\u00edvel criar.'); return; }
+    item = await resp.json();
+  }
+
+  const arquivos = document.getElementById('campoArquivos').files;
+  let enviados = 0;
+  for (const arquivo of arquivos) {
+    const dados = new FormData();
+    dados.append('arquivo', arquivo);
+    const resp = await api('/api/itens/' + item.id + '/anexos',
+      { method:'POST', body: dados });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      feedback.className = 'feedback erro';
+      feedback.textContent = err.erro || 'Falha ao enviar ' + arquivo.name;
+      setTimeout(carregar, 1500);
+      return;
+    }
+    enviados++;
+  }
+
+  fecharModais();
+  toast(id ? 'Registro atualizado.' :
+    'Registro criado' + (enviados ? ' com ' + enviados + ' anexo(s).' : '.'));
+  carregar();
+  carregarCategorias();
+});
+
+async function mostrarErro(feedback, resp, padrao) {
+  const corpo = await resp.json().catch(() => ({}));
+  feedback.className = 'feedback erro';
+  feedback.textContent = corpo.erro || padrao;
+}
+
+function fecharModais() {
+  if (trocaSenhaPendente) return;
+  document.querySelectorAll('.fundo-modal').forEach(m => m.classList.remove('aberto'));
+}
+
+async function salvarTrocaSenha() {
+  const feedback = document.getElementById('feedbackTroca');
+  feedback.className = 'feedback';
+  feedback.textContent = '';
+  const senhaAtual = document.getElementById('senhaAtual').value;
+  const novaSenha = document.getElementById('senhaNova').value;
+  const confirmar = document.getElementById('senhaConfirmar').value;
+  if (!senhaAtual || novaSenha.length < 4) {
+    feedback.className = 'feedback erro';
+    feedback.textContent = 'Preencha a senha tempor\u00e1ria e a nova senha (m\u00ednimo 4 caracteres).';
+    return;
+  }
+  if (novaSenha !== confirmar) {
+    feedback.className = 'feedback erro';
+    feedback.textContent = 'As novas senhas n\u00e3o conferem.';
+    return;
+  }
+  const resp = await api('/api/auth/trocar-senha', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ senhaAtual, novaSenha }) });
+  if (!resp.ok) {
+    await mostrarErro(feedback, resp, 'Falha ao trocar a senha.');
+    return;
+  }
+  trocaSenhaPendente = false;
+  document.getElementById('modalTrocarSenha').classList.remove('aberto');
+  toast('Senha alterada. Use a nova senha no pr\u00f3ximo login.');
+  carregar();
+  carregarCategorias();
+}
+
+// ------------------------------------------------------ dashboard (ADMIN)
+
+let granularidadeAtual = 'MES';
+
+async function abrirDashboard() {
+  if (!podeExcluir()) return;
+  document.getElementById('modalDashboard').classList.add('aberto');
+  carregarDashboard(granularidadeAtual);
+}
+
+function trocarGranularidade(g) {
+  granularidadeAtual = g;
+  ['fdDia', 'fdMes', 'fdAno'].forEach(id => {
+    const botao = document.getElementById(id);
+    botao.classList.toggle('ativo',
+      id === 'fd' + g.charAt(0) + g.slice(1).toLowerCase());
+  });
+  carregarDashboard(g);
+}
+
+async function carregarDashboard(g) {
+  document.getElementById('grafico').innerHTML =
+    '<div style="margin:auto; color:var(--sub); font-size:13px;">Carregando...</div>';
+  document.getElementById('rotulos').innerHTML = '';
+  document.getElementById('graficoVazio').style.display = 'none';
+  document.getElementById('totalDash').innerHTML = '';
+
+  const resp = await api('/api/itens/estatisticas/registros?granularidade=' + g);
+  if (!resp.ok) { fecharModais(); return; }
+  const dados = await resp.json();
+  const total = dados.reduce((soma, d) => soma + d.contagem, 0);
+  document.getElementById('totalDash').innerHTML =
+    'Total no per\u00edodo: <b>' + total + '</b> registro(s)';
+
+  const max = Math.max(1, ...dados.map(d => d.contagem));
+  const grafico = document.getElementById('grafico');
+  const rotulos = document.getElementById('rotulos');
+  grafico.innerHTML = '';
+  rotulos.innerHTML = '';
+
+  if (total === 0) {
+    document.getElementById('grafico').innerHTML = '';
+    document.getElementById('graficoVazio').style.display = 'block';
+    return;
+  }
+  for (const ponto of dados) {
+    const altura = Math.max(6, Math.round(ponto.contagem / max * 170));
+    const coluna = document.createElement('div');
+    coluna.className = 'coluna';
+    coluna.title = ponto.rotulo + ': ' + ponto.contagem
+      + ' registro(s)';
+    coluna.innerHTML = `<div class="barra" style="height:${altura}px">
+      <div class="qtd">${ponto.contagem > 0 ? ponto.contagem : ''}</div></div>`;
+    grafico.appendChild(coluna);
+    const rotulo = document.createElement('div');
+    rotulo.textContent = ponto.rotulo;
+    rotulos.appendChild(rotulo);
+  }
+}
+
+async function sair() {
+  await api('/api/auth/logout', { method:'POST' });
+  window.location.href = '/login.html';
+}
+
+// ------------------------------------------------------ usuarios (ADMIN)
+
+let usuariosCache = [];
+let editandoId = null;
+
+function resetFormUsuario() {
+  editandoId = null;
+  document.getElementById('usrLogin').disabled = false;
+  document.getElementById('usrLogin').value = '';
+  document.getElementById('usrSenha').value = '';
+  document.getElementById('usrSenha').placeholder =
+    'M\u00ednimo 4 caracteres';
+  document.getElementById('usrNome').value = '';
+  document.getElementById('usrPerfil').value = 'USER2';
+  document.getElementById('usrDeveTrocarSenha').checked = false;
+  document.getElementById('botaoCriarUsuario').innerHTML =
+    '&#10133; Criar usu\u00e1rio';
+  document.getElementById('cancelarEdicao').style.display = 'none';
+}
+
+function editarUsuario(id) {
+  const u = usuariosCache.find(x => x.id === id);
+  if (!u) return;
+  editandoId = id;
+  document.getElementById('usrLogin').value = u.login;
+  document.getElementById('usrLogin').disabled = true;
+  document.getElementById('usrSenha').value = '';
+  document.getElementById('usrSenha').placeholder =
+    'Deixe vazio para manter a senha atual';
+  document.getElementById('usrNome').value = u.nome;
+  document.getElementById('usrPerfil').value = u.perfil;
+  document.getElementById('usrDeveTrocarSenha').checked = !!u.deveTrocarSenha;
+  document.getElementById('botaoCriarUsuario').innerHTML =
+    '\u2713 Salvar altera\u00e7\u00f5es';
+  document.getElementById('cancelarEdicao').style.display = '';
+  document.getElementById('usrLogin').focus();
+}
+
+async function abrirUsuarios() {
+  if (!podeExcluir()) return;
+  resetFormUsuario();
+  document.getElementById('modalUsuarios').classList.add('aberto');
+  listarUsuarios();
+}
+
+async function listarUsuarios() {
+  const resp = await api('/api/usuarios');
+  if (!resp.ok) { fecharModais(); return; }
+  usuariosCache = await resp.json();
+  const corpo = document.getElementById('corpoUsuarios');
+  corpo.innerHTML = '';
+  for (const u of usuariosCache) {
+    const linha = document.createElement('tr');
+    linha.innerHTML = `<td>${u.login}</td><td>${u.nome}</td>
+      <td><span class="badge">${rotuloPerfil(u.perfil)}</span></td>
+      <td>${u.deveTrocarSenha ? '<span class="badge">tempor\u00e1ria</span>' : 'normal'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-editar" onclick="editarUsuario(${u.id})">&#9998; editar perfil</button>
+        <button class="btn-excluir" onclick="removerUsuario(${u.id}, '${u.login}')">excluir</button>
+      </td>`;
+    corpo.appendChild(linha);
+  }
+}
+
+async function salvarUsuario() {
+  const nome = document.getElementById('usrNome').value.trim();
+  const senha = document.getElementById('usrSenha').value;
+  const perfil = document.getElementById('usrPerfil').value;
+  const deveTrocarSenha = document.getElementById('usrDeveTrocarSenha').checked;
+
+  if (editandoId) {
+    // editar nome, perfil e (opcional) senha
+    if (!nome) { toast('Preencha o nome.'); return; }
+    const resp = await api('/api/usuarios/' + editandoId, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ nome, senha: senha || null, perfil, deveTrocarSenha }) });
+    const corpo = await resp.json().catch(() => ({}));
+    if (!resp.ok) { toast(corpo.erro || 'Falha ao salvar altera\u00e7\u00f5es.'); return; }
+    toast('Usu\u00e1rio ' + corpo.login + ' atualizado para o perfil '
+      + rotuloPerfil(corpo.perfil) + '.');
+    resetFormUsuario();
+    listarUsuarios();
+    return;
+  }
+
+  const login = document.getElementById('usrLogin').value.trim();
+  if (!login || !senha || !nome) {
+    toast('Preencha login, senha e nome.');
+    return;
+  }
+  const resp = await api('/api/usuarios', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ login, senha, nome, perfil, deveTrocarSenha }) });
+  const corpo = await resp.json().catch(() => ({}));
+  if (!resp.ok) { toast(corpo.erro || 'Falha ao criar usu\u00e1rio.'); return; }
+  document.getElementById('usrLogin').value = '';
+  document.getElementById('usrSenha').value = '';
+  document.getElementById('usrNome').value = '';
+  document.getElementById('usrDeveTrocarSenha').checked = false;
+  toast('Usu\u00e1rio ' + login + ' criado com perfil ' + perfil + '.');
+  listarUsuarios();
+}
+
+async function removerUsuario(id, login) {
+  if (!confirm('Excluir o usu\u00e1rio "' + login + '"?')) return;
+  const resp = await api('/api/usuarios/' + id, { method:'DELETE' });
+  const corpo = await resp.json().catch(() => ({}));
+  if (!resp.ok) { toast(corpo.erro || 'Falha ao excluir.'); return; }
+  toast('Usu\u00e1rio exclu\u00eddo.');
+  listarUsuarios();
+}
+
+async function sair() {
+  await api('/api/auth/logout', { method:'POST' });
+  window.location.href = '/login.html';
+}
+
+document.querySelectorAll('.fundo-modal').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) fecharModais(); }));
+
+async function carregarCategorias() {
+  const resp = await api('/api/itens/categorias?t=' + Date.now());
+  if (!resp.ok) return;
+  const categorias = await resp.json();
+  const select = document.getElementById('filtroCategoria');
+  const atual = select.value;
+  select.innerHTML = '<option value="todas">Todas as categorias</option>'
+    + categorias.map(c => `<option>${c}</option>`).join('');
+  select.value = atual;
+  document.getElementById('categorias').innerHTML =
+    categorias.map(c => `<option value="${c}">`).join('');
+  document.getElementById('kpiCategorias').textContent = categorias.length;
+}
+
+document.getElementById('busca').addEventListener('input', carregar);
+document.getElementById('filtroCategoria').addEventListener('change', carregar);
+
+// upload direto no detalhe
+document.getElementById('campoAnexoDireto').addEventListener('change',
+  async (e) => {
+    if (!itemAtual) return;
+    for (const arquivo of e.target.files) {
+      const dados = new FormData();
+      dados.append('arquivo', arquivo);
+      const resp = await api('/api/itens/' + itemAtual.id + '/anexos',
+        { method:'POST', body: dados });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        toast(err.erro || ('Falha ao enviar ' + arquivo.name));
+        break;
+      }
+      toast('Anexo enviado: ' + arquivo.name);
+    }
+    e.target.value = '';
+    const lista = await (await api('/api/itens?query=')).json();
+    const atualizado = lista.find(i => i.id === itemAtual.id);
+    if (atualizado) { itemAtual = atualizado; fecharModais(); abrirDetalhe(atualizado); }
+    carregar();
+  });
+
+carregar();
+carregarCategorias();
+</script>
+</body>
+</html>
