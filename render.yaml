@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: banco-de-conhecimento
+    runtime: docker
+    plan: free
+    healthCheckPath: /login.html
+    envVars:
+      # senhas definidas no painel do Render (nao ficam no codigo)
+      - key: APP_ADMIN_SENHA
+        sync: false
+      - key: APP_USER1_SENHA
+        sync: false
+      - key: APP_USER2_SENHA
+        sync: false
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m
