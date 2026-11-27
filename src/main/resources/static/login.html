@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Banco de Conhecimento</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+  body {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  }
+  .card {
+    background:#fff; border-radius:16px; padding:48px 40px; width:380px;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+  }
+  .card h1 { color:#1d3557; font-size:26px; text-align:center; margin-bottom:6px; }
+  .card p.sub { color:#6c757d; text-align:center; margin-bottom:28px; font-size:14px; }
+  .card label { display:block; color:#495057; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  .card input {
+    width:100%; padding:12px 14px; border:1.5px solid #dee2e6; border-radius:10px;
+    font-size:15px; outline:none; transition:border-color .2s;
+  }
+  .card input:focus { border-color:#2c5364; }
+  .card button {
+    width:100%; margin-top:24px; padding:13px; border:none; border-radius:10px;
+    background:linear-gradient(135deg,#203a43,#2c5364); color:#fff; font-size:16px;
+    font-weight:600; cursor:pointer; transition:transform .15s;
+  }
+  .card button:hover { transform:translateY(-1px); }
+  .erro {
+    display:none; margin-top:16px; padding:11px; border-radius:8px;
+    background:#fdecea; color:#c0392b; font-size:13px; text-align:center;
+  }
+  .dica { margin-top:22px; text-align:center; color:#adb5bd; font-size:12px; }
+</style>
+</head>
+<body>
+  <form class="card" id="formLogin">
+    <h1>&#128218; Banco de Conhecimento</h1>
+    <p class="sub">Entre para gerenciar os registros</p>
+
+    <label for="login">Usu&aacute;rio</label>
+    <input id="login" name="login" autocomplete="username" required autofocus>
+
+    <label for="senha">Senha</label>
+    <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+
+    <button type="submit">Entrar</button>
+    <div class="erro" id="msgErro"></div>
+  </form>
+
+<script>
+document.getElementById('formLogin').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msgErro');
+  msg.style.display = 'none';
+  try {
+    const resp = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        login: document.getElementById('login').value,
+        senha: document.getElementById('senha').value
+      })
+    });
+    if (resp.ok) {
+      window.location.href = '/app.html';
+    } else {
+      const corpo = await resp.json().catch(() => ({}));
+      msg.textContent = corpo.erro || 'Login ou senha inválidos.';
+      msg.style.display = 'block';
+    }
+  } catch (erro) {
+    msg.textContent = 'Falha de conexão com o servidor.';
+    msg.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>
